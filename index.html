@@ -13,25 +13,36 @@
             height: 100vh;
             margin: 0;
             font-family: 'Arial', sans-serif;
-            background-color: #f3e5f5; 
+            background-color: #fce4ec; 
             text-align: center;
             overflow: hidden;
             position: relative;
         }
 
+        #canvasFireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5; /* Bajamos un poco el z-index */
+        }
+
         h1 { 
-            color: #7b1fa2; 
+            color: #ad1457; 
             font-size: 2.5rem; 
             padding: 0 20px; 
             z-index: 10;
-            text-shadow: 2px 2px white;
-            transition: all 0.5s ease; /* Suaviza el cambio de texto */
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
         }
 
         .contenedor-botones {
             margin-top: 30px;
             z-index: 10;
-            height: 100px; /* Espacio para que el botón No no se encime */
+            display: flex;
+            gap: 20px;
+            justify-content: center;
         }
 
         button {
@@ -40,89 +51,179 @@
             cursor: pointer;
             border-radius: 50px;
             border: none;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             font-weight: bold;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.05);
         }
 
-        #btnSi {
-            background-color: #ff80ab;
-            color: white;
-            position: relative;
-            z-index: 11;
+        #btnSi { background-color: #f06292; color: white; }
+        #btnSi:hover { transform: scale(1.1); background-color: #ec407a; }
+        #btnNo { background-color: #e1bee7; color: #880e4f; }
+
+        #mensajeFinal {
+            display: none; 
+            flex-direction: column;
+            align-items: center;
+            z-index: 30;
         }
 
-        #btnSi:hover {
-            transform: scale(1.2);
-            background-color: #f06292;
+        .frase-rojita {
+            font-size: 2.2rem;
+            color: #c2185b;
+            font-weight: bold;
+            line-height: 1.4;
+            animation: latido 1.5s infinite;
         }
 
-        #btnNo {
-            background-color: #bdbdbd;
-            color: white;
-            position: absolute; 
+        @keyframes latido {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
-        /* Elementos flotantes */
+        /* --- CAMBIO AQUÍ: Subimos el z-index de los emojis --- */
         .flotante {
             position: absolute;
-            font-size: 50px;
+            font-size: 45px;
             user-select: none;
-            z-index: 1;
-            animation: floatAnimation 10s infinite ease-in-out;
+            z-index: 40; /* Por encima de los fuegos (5) y el mensaje (30) */
+            opacity: 0.8; /* Les di un poco más de opacidad para que resalten */
+            animation: floatAnimation 8s infinite ease-in-out;
         }
 
         @keyframes floatAnimation {
-            0% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
-            50% { transform: translateY(-100px) rotate(20deg); opacity: 1; }
-            100% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-40px) rotate(10deg); }
         }
 
-        .pos1 { top: 10%; left: 10%; animation-duration: 8s; }
-        .pos2 { top: 20%; right: 15%; animation-duration: 12s; }
-        .pos3 { bottom: 15%; left: 20%; animation-duration: 10s; }
-        .pos4 { bottom: 20%; right: 10%; animation-duration: 9s; }
-        .pos5 { top: 50%; left: 5%; animation-duration: 11s; }
-        .pos6 { top: 5%; left: 50%; animation-duration: 7s; }
+        .pos1 { top: 10%; left: 5%; }
+        .pos2 { top: 15%; right: 10%; animation-delay: 1s; }
+        .pos3 { bottom: 10%; left: 15%; animation-delay: 2s; }
+        .pos4 { bottom: 15%; right: 5%; animation-delay: 3s; }
+        /* Agregué un par más para que el fondo se vea más lleno */
+        .pos5 { top: 40%; left: 80%; animation-delay: 1.5s; }
+        .pos6 { top: 60%; left: 5%; animation-delay: 2.5s; }
 
     </style>
 </head>
 <body>
 
-    <div class="flotante pos1">🥑</div>
-    <div class="flotante pos2">🍓</div>
-    <div class="flotante pos3">❤️</div>
-    <div class="flotante pos4">🥑</div>
-    <div class="flotante pos5">🍓</div>
-    <div class="flotante pos6">💖</div>
+    <canvas id="canvasFireworks"></canvas>
 
-    <h1 id="tituloPrincipal">Naomi mi princesa hermosa, ¿Puedo ser tu San Valentín? ❤️</h1>
+    <div class="flotante pos1">🍓</div>
+    <div class="flotante pos2">💖</div>
+    <div class="flotante pos3">🥑</div>
+    <div class="flotante pos4">🌸</div>
+    <div class="flotante pos5">🍓</div>
+    <div class="flotante pos6">🥑</div>
+
+    <h1 id="tituloPrincipal">Naomi, ¿Aceptas ser mi San Valentín? ❤️</h1>
 
     <div id="contenedorBotones" class="contenedor-botones">
         <button id="btnSi" onclick="respuestaSi()">¡SÍ! 😍</button>
-        <button id="btnNo" onmouseover="moverBotonNo()">No 🥺</button>
+        <button id="btnNo" onclick="moverBotonNo()">No 🥺</button>
+    </div>
+
+    <div id="mensajeFinal">
+        <p class="frase-rojita">Sabía que aceptarías Rojita ❤️<br> Nos vemos pronto, Ya quiero verte.</p>
     </div>
 
     <script>
         function respuestaSi() {
-            // Cambiamos el texto y quitamos los botones para que se vea el mensaje
-            document.getElementById('tituloPrincipal').innerHTML = "¡Sabía que dirías que sí! ❤️<br>Nos vemos pronto Rojita, ya te quiero ver.";
+            document.getElementById('tituloPrincipal').style.display = 'none';
             document.getElementById('contenedorBotones').style.display = 'none';
-            
-            // Opcional: Si quieres que después de 4 segundos se vaya a Google, descomenta la línea de abajo:
-            // setTimeout(() => { location.href = "https://www.google.com/search?q=gatos+enamorados+gif"; }, 4000);
+            document.getElementById('mensajeFinal').style.display = 'flex';
+            iniciarFuegos();
         }
 
         function moverBotonNo() {
             const btnNo = document.getElementById('btnNo');
-            // Calculamos posiciones seguras para que no se salga de la pantalla
-            const x = Math.random() * (window.innerWidth - btnNo.offsetWidth);
-            const y = Math.random() * (window.innerHeight - btnNo.offsetHeight);
-            
+            btnNo.style.position = 'absolute';
+            const x = Math.random() * (window.innerWidth - btnNo.offsetWidth - 20);
+            const y = Math.random() * (window.innerHeight - btnNo.offsetHeight - 20);
             btnNo.style.left = x + 'px';
             btnNo.style.top = y + 'px';
         }
-    </script>
 
+        const canvas = document.getElementById('canvasFireworks');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor(x, y, color, velX, velY) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.velocity = { x: velX, y: velY };
+                this.alpha = 1;
+                this.friction = 0.95;
+                this.gravity = 0.12;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 1.8, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.velocity.x *= this.friction;
+                this.velocity.y *= this.friction;
+                this.velocity.y += this.gravity;
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= 0.01;
+            }
+        }
+
+        function createFirework(x, y) {
+            const colors = ['#f48fb1', '#f06292', '#fff176', '#ffffff', '#ce93d8'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const count = 80;
+            for (let i = 0; i < count; i++) {
+                const angle = (Math.PI * 2 / count) * i;
+                const speed = Math.random() * 6 + 2;
+                particles.push(new Particle(x, y, color, Math.cos(angle) * speed, Math.sin(angle) * speed));
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            // Limpiamos el canvas de forma que no afecte al fondo del body
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach((p, i) => {
+                if (p.alpha > 0) {
+                    p.update();
+                    p.draw();
+                } else {
+                    particles.splice(i, 1);
+                }
+            });
+        }
+
+        function iniciarFuegos() {
+            animate();
+            setInterval(() => {
+                createFirework(
+                    Math.random() * canvas.width,
+                    Math.random() * (canvas.height * 0.6)
+                );
+            }, 700);
+        }
+    </script>
 </body>
 </html>
